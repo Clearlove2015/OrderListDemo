@@ -86,11 +86,11 @@
             android:layout_width="70dp"
             android:layout_height="wrap_content"
             android:layout_marginRight="10dp"
-            android:background="@drawable/btn_bg"
+            android:background="@drawable/btn_bg_first"
             android:gravity="center"
             android:padding="5dp"
             android:text="再次购买"
-            android:textColor="@android:color/holo_red_dark" />
+            android:textColor="@android:color/white" />
 
         <TextView
             android:id="@+id/tv_second"
