@@ -6,11 +6,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.google.gson.Gson;
 import com.odbpo.fenggou.orderlist.R;
 import com.odbpo.fenggou.orderlist.bean.OrderListBean;
+import com.odbpo.fenggou.orderlist.utils.AppToast;
 import com.odbpo.fenggou.orderlist.utils.DataFormat;
 
 import java.util.List;
@@ -42,11 +45,18 @@ public class SAdapter extends RecyclerView.Adapter {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ItemViewHolder itemHolder = (ItemViewHolder) holder;
-        OrderListBean.DataBean.OrderGoodsListBean bean = mData.get(position);
+        final OrderListBean.DataBean.OrderGoodsListBean bean = mData.get(position);
         Glide.with(context).load(bean.getGoodsImg()).into(itemHolder.ivImage);
         itemHolder.tvGoodsName.setText(bean.getGoodsName());
         itemHolder.tvGoodsInfoNum.setText("x" + bean.getGoodsInfoNum());
         itemHolder.tvGoodsInfoOldPrice.setText(DataFormat.getPrice(bean.getGoodsInfoPrice()));
+        itemHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Gson gson = new Gson();
+                AppToast.show("ItemView" + "\n" + gson.toJson(bean));
+            }
+        });
     }
 
     @Override
@@ -55,6 +65,8 @@ public class SAdapter extends RecyclerView.Adapter {
     }
 
     class ItemViewHolder extends RecyclerView.ViewHolder {
+        @Bind(R.id.itemView)
+        LinearLayout itemView;
         @Bind(R.id.iv_image)
         ImageView ivImage;
         @Bind(R.id.tv_goodsName)
@@ -66,7 +78,7 @@ public class SAdapter extends RecyclerView.Adapter {
 
         public ItemViewHolder(View itemView) {
             super(itemView);
-            ButterKnife.bind(this,itemView);
+            ButterKnife.bind(this, itemView);
         }
     }
 

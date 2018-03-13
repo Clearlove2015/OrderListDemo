@@ -5,6 +5,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -44,7 +45,6 @@ public class FAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ItemViewHolder itemHolder = (ItemViewHolder) holder;
         OrderListBean.DataBean bean = mData.get(position);
-        itemHolder.itemView.setTag(position);
 
         itemHolder.tvOrderCode.setText("订单号：" + bean.getOrderCode());
         itemHolder.tvOrderStatus.setText(setDefaltOrderStatus(Integer.parseInt(bean.getOrderStatus()), bean.getOrderLinePay(), Integer.parseInt(bean.getEvaluateFlag())));
@@ -54,11 +54,15 @@ public class FAdapter extends RecyclerView.Adapter {
         itemHolder.rvS.setAdapter(new SAdapter(bean.getOrderGoodsList()));
         itemHolder.tvOrderPrice.setText(DataFormat.getPrice(bean.getOrderPrice()));
 
-        itemHolder.setIsRecyclable(false);//解决recyclerview中ItemViewHolder复用数据错乱问题
-        setDefaultBtnText(itemHolder.tvFirst, itemHolder.tvSecond, bean);
-        itemHolder.tvFirst.setOnClickListener(new OnItemClickListener(itemHolder.tvFirst.getText().toString(),bean));
-        itemHolder.tvSecond.setOnClickListener(new OnItemClickListener(itemHolder.tvSecond.getText().toString(),bean));
-        itemHolder.tvThird.setOnClickListener(new OnItemClickListener(itemHolder.tvThird.getText().toString(),bean));
+        //itemHolder.setIsRecyclable(false);//取消复用，解决recyclerview中ItemViewHolder复用数据错乱问题
+        //数据复用问题已解决-->原因：其实不是复用的问题，是因为TextView显示的代码没写全（tvFirst.setVisibility(View.VISIBLE);），偷了下懒。
+        setDefaultBtnText(itemHolder, bean);
+
+        itemHolder.itemView.setOnClickListener(new OnItemClickListener("ItemView", bean));
+        itemHolder.tvFirst.setOnClickListener(new OnItemClickListener(itemHolder.tvFirst.getText().toString(), bean));
+        itemHolder.tvSecond.setOnClickListener(new OnItemClickListener(itemHolder.tvSecond.getText().toString(), bean));
+        itemHolder.tvThird.setOnClickListener(new OnItemClickListener(itemHolder.tvThird.getText().toString(), bean));
+
     }
 
     @Override
@@ -67,6 +71,8 @@ public class FAdapter extends RecyclerView.Adapter {
     }
 
     class ItemViewHolder extends RecyclerView.ViewHolder {
+        @Bind(R.id.itemView)
+        LinearLayout itemView;
         @Bind(R.id.tv_orderCode)
         TextView tvOrderCode;
         @Bind(R.id.tv_orderStatus)
@@ -81,11 +87,9 @@ public class FAdapter extends RecyclerView.Adapter {
         TextView tvSecond;
         @Bind(R.id.tv_third)
         TextView tvThird;
-        View itemView;
 
         public ItemViewHolder(View itemView) {
             super(itemView);
-            this.itemView = itemView;
             ButterKnife.bind(this, itemView);
         }
     }
@@ -149,60 +153,82 @@ public class FAdapter extends RecyclerView.Adapter {
     }
 
     //其他订单按钮
-    private void setDefaultBtnText(TextView tvFirst, TextView tvSecond, OrderListBean.DataBean bean) {
+    private void setDefaultBtnText(ItemViewHolder holder, OrderListBean.DataBean bean) {
         int orderStatus = Integer.parseInt(bean.getOrderStatus());
         int evaluateFlag = Integer.parseInt(bean.getEvaluateFlag());
         int isBack = bean.getIsBack();
         int orderExpressType = Integer.parseInt(bean.getOrderExpressType());
+        TextView tvFirst = holder.tvFirst;
+        TextView tvSecond = holder.tvSecond;
+
         if (orderStatus == 0) {
+            tvFirst.setVisibility(View.VISIBLE);
+            tvSecond.setVisibility(View.VISIBLE);
             tvFirst.setText("立即支付");
             tvSecond.setText("取消订单");
         } else if (orderStatus == 2) {
             if (orderExpressType == 1) {
                 tvFirst.setVisibility(View.GONE);
+                tvSecond.setVisibility(View.VISIBLE);
                 tvSecond.setText("确认收货");
             } else {
+                tvFirst.setVisibility(View.VISIBLE);
+                tvSecond.setVisibility(View.VISIBLE);
                 tvFirst.setText("查看物流");
                 tvSecond.setText("确认收货");
             }
         } else if (orderStatus == 3) {
             if (evaluateFlag == 1) {
                 tvFirst.setVisibility(View.GONE);
+                tvSecond.setVisibility(View.VISIBLE);
                 tvSecond.setText("申请退货");
             } else {
+                tvFirst.setVisibility(View.VISIBLE);
+                tvSecond.setVisibility(View.VISIBLE);
                 tvFirst.setText("评价");
                 tvSecond.setText("申请退货");
             }
         } else if (orderStatus == 13) {
             if (isBack == 2) {
                 tvFirst.setVisibility(View.GONE);
+                tvSecond.setVisibility(View.VISIBLE);
                 tvSecond.setText("退款详情");
             } else {
                 tvFirst.setVisibility(View.GONE);
+                tvSecond.setVisibility(View.VISIBLE);
                 tvSecond.setText("退货详情");
             }
         } else if (orderStatus == 15 || orderStatus == 18) {
             tvFirst.setVisibility(View.GONE);
+            tvSecond.setVisibility(View.VISIBLE);
             tvSecond.setText("退款详情");
         } else if (orderStatus == 8) {
+            tvFirst.setVisibility(View.VISIBLE);
+            tvSecond.setVisibility(View.VISIBLE);
             tvFirst.setText("填写物流");
             tvSecond.setText("退货详情");
         } else if (orderStatus == 7 || orderStatus == 8 || orderStatus == 9 || orderStatus == 10 || orderStatus == 11 || orderStatus == 14 || orderStatus == 16 || orderStatus == 17 || orderStatus == 12) {
             if (orderStatus == 8) {
+                tvFirst.setVisibility(View.VISIBLE);
+                tvSecond.setVisibility(View.VISIBLE);
                 tvFirst.setText("物流信息");
                 tvSecond.setText("退货详情");
             } else {
                 tvFirst.setVisibility(View.GONE);
+                tvSecond.setVisibility(View.VISIBLE);
                 tvSecond.setText("退货详情");
             }
         } else if (orderStatus == 5 || orderStatus == 6) {
             tvFirst.setVisibility(View.GONE);
+            tvSecond.setVisibility(View.VISIBLE);
             tvSecond.setText("申请退货");
         } else if (orderStatus == 1) {
             tvFirst.setVisibility(View.GONE);
+            tvSecond.setVisibility(View.VISIBLE);
             tvSecond.setText("申请退款");
         } else if (orderStatus == 18) {
             tvFirst.setVisibility(View.GONE);
+            tvSecond.setVisibility(View.VISIBLE);
             tvSecond.setText("退款详情");
         } else {
             tvFirst.setVisibility(View.GONE);
@@ -223,6 +249,9 @@ public class FAdapter extends RecyclerView.Adapter {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
+                case R.id.itemView:
+                    AppToast.show(tempStr + "\n" + gson.toJson(bean));
+                    break;
                 case R.id.tv_first:
                     AppToast.show(tempStr + "\n" + gson.toJson(bean));
                     break;
